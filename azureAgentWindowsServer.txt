@@ -1,0 +1,113 @@
+######### variables ##############
+
+# variable "preffered_agent_os" {
+#   description = "What OS must run on your agent?"
+# }
+
+locals{
+region = "westeurope"
+user = "Arthur"
+password = "P@$$w0rd123!"
+}
+
+##################################
+
+# Configure the Microsoft Azure Provider
+provider "azurerm" {
+    version = "~>2.0"
+    features {}
+}
+
+# Create a resource group if it doesn't exist
+resource "azurerm_resource_group" "main" {
+    name     = "agents-rg"
+    location = local.region
+}
+
+resource "azurerm_virtual_network" "main" {
+  name                = "network"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_subnet" "internal" {
+  name                 = "internal"
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_public_ip" "outside" {
+  name                    = "publicIp"
+  resource_group_name     = azurerm_resource_group.main.name
+  location                = azurerm_resource_group.main.location
+  allocation_method       = "Static"
+  idle_timeout_in_minutes = 30
+}
+
+resource "azurerm_network_interface" "main" {
+  name                = "nic"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  ip_configuration {
+    name                          = "ipconfig"
+    subnet_id                     = azurerm_subnet.internal.id
+    private_ip_address_allocation = "static"
+    private_ip_address            = "10.0.2.10"
+    public_ip_address_id          = azurerm_public_ip.outside.id
+  }
+}
+
+resource "azurerm_windows_virtual_machine" "main" {
+  name                = "Windows-agent"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  network_interface_ids = [azurerm_network_interface.main.id]
+  size                = "Standard_F2"
+  admin_username      = local.user
+  admin_password      = local.password
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2016-Datacenter"#2019
+    version   = "latest"
+  }
+  
+  # # Copy the scripts
+  # provisioner "file" {
+  #   source      = "windowsAgent.ps1"
+  #   destination = "C:/Users/${local.user}/Downloads"
+  #   connection {
+  #     type     = "winrm"
+  #     user     = local.user
+  #     password = local.password
+  #     host     = element(azurerm_public_ip.outside.*.ip_address, 0)
+  #   }
+  # }
+
+  # # execute powershell
+  # provisioner "remote-exec" {
+  #     inline = [         
+  #         "powershell.exe -ExecutionPolicy Bypass -File C:/Users/${local.user}/Downloads/windowsAgent.ps1"
+  #     ]
+  #   connection {
+  #     type     = "winrm"
+  #     user     = local.user
+  #     password = local.password
+  #     host     = element(azurerm_public_ip.outside.*.ip_address, 0)
+  #   }
+  # }
+
+ }
+
+output "public_ip_address" {
+  value = azurerm_public_ip.outside.*.ip_address
+}
