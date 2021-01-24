@@ -7,7 +7,8 @@ $planName = "webPlan"
 $servicePlan = "FREE"
 $org = "arthurtaragola"
 $uri = "https://dev.azure.com/$org"
-$agentPool = "Default"
+$poolId = 1
+$agentId = 13
 $repo = 'https://github.com/ArthurTaragola/sampleWebapp'
 $project = 'Research'
 
@@ -38,22 +39,29 @@ az webapp create --name $appName --plan $planName -g $rsgName --runtime "DOTNETC
 
 ### Pipelines
 
-#get agent
-#az pipelines pool list --pool-name $agentPool --organization $uri
-#az pipelines agent list --pool-id 10  --organization $uri
-# az vm run-command invoke  --command-id RunPowerShellScript --name win-vm -g my-resource-group \
+#see agent pool
+az pipelines pool show --id $poolId --output table --organization $uri
 
-#create pipeline CI
-az pipelines create --organization $uri `
-                    --project $project `
-                    --name 'webapp' `
-                    --description 'Pipeline for CI of a .net core webapp' `
-                    --repository $repo --branch master `
-                    --yml-path azure-pipelines.yml
+$continue = $true
+while($continue)
+{
+    $agentObj = az pipelines agent show --pool-id $poolId --agent-id $agentId --organization $uri | ConvertFrom-Json
+    $agentStatus = $agentObj.status
 
-#create release pipeline CD
-#trigger release pipeline
-# az pipelines release create --organization $uri `
-#                             --project $project `
-#                             --definition-name 'New release pipeline'
+    if ($agentStatus -eq 'online') {
+
+        #create pipeline CI
+        az pipelines create --organization $uri `
+                            --project $project `
+                            --name 'webapp' `
+                            --description 'Pipeline for CI of a .net core webapp' `
+                            --repository $repo --branch master `
+                            --yml-path azure-pipelines.yml        
+        $continue = $false
+    }
+    else {
+        Write-Host "Waiting for agent to come online ..."
+        Start-Sleep 60.0
+    }
+}
 

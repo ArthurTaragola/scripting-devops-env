@@ -75,6 +75,8 @@ resource "azurerm_managed_disk" "copy" {
   storage_account_type = "Standard_LRS"
   create_option        = "Copy"
   source_resource_id   = data.azurerm_managed_disk.source.id
+  #wachten tot rg gemaakt is
+  depends_on = [ azurerm_resource_group.main ]
 }
 
 resource "azurerm_virtual_machine" "main" {
@@ -97,4 +99,12 @@ resource "azurerm_virtual_machine" "main" {
 
 output "public_ip_address" {
   value = azurerm_public_ip.outside.*.ip_address
+}
+
+#full automate
+resource "null_resource" "startScript" {
+  provisioner "local-exec" {
+    command = ".\\webapp-pipelines.ps1"
+    interpreter = ["PowerShell", "-Command"]
+  }
 }
