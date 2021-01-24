@@ -1,9 +1,5 @@
 ######### variables ##############
 
-# variable "preffered_agent_os" {
-#   description = "What OS must run on your agent?"
-# }
-
 locals{
 region = "westeurope"
 }
