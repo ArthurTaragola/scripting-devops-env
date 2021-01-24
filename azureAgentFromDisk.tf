@@ -1,9 +1,9 @@
 ######### variables ##############
 
 locals{
-region = "westeurope"
-user = "Arthur"
-password = "P@$$w0rd123!"
+region = ""
+user = ""
+password = ""
 rgName = "agents-rg"
 
 #disks
