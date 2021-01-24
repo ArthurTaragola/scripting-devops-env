@@ -1,13 +1,9 @@
 ######### variables ##############
 
-# variable "preffered_agent_os" {
-#   description = "What OS must run on your agent?"
-# }
-
 locals{
 region = "westeurope"
-user = "Arthur"
-password = "P@$$w0rd123!"
+user = ""
+password = ""
 }
 
 ##################################
