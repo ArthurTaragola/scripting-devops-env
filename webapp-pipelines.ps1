@@ -5,11 +5,11 @@ $regionName = "westeurope"
 $appName = "CI-CD-webapp"
 $planName = "webPlan"
 $servicePlan = "FREE"
-$org = "arthurtaragola"
+$org = ""
 $uri = "https://dev.azure.com/$org"
 $poolId = 1
 $agentId = 13
-$repo = 'https://github.com/ArthurTaragola/sampleWebapp'
+$repo = 'https://github.com/xxx/sampleWebapp'
 $project = 'Research'
 
 ###############################
