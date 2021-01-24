@@ -2,10 +2,10 @@
 
 $downloadUri = "https://vstsagentpackage.azureedge.net/agent/2.179.0/vsts-agent-win-x64-2.179.0.zip"
 $agentFoler = "c:\agent"
-$user = "arthur"
-$org = "arthurtaragola"
+$user = ""
+$org = ""
 $uri = "https://dev.azure.com/$org"
-$token = "eebw73vudsfrmuhlnas7b66x7ovjsq2zttdidr7iip7q5vaqx6aa"
+$token = ""
 $agentPool = "Default"
 
 ###############################
